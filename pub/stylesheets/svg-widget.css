@@ -1,0 +1,14 @@
+
+
+.svg-widget 
+{
+    display: inline;
+    background: green;
+    border: 1pt;
+}
+
+svg
+{
+    background: blue;
+    display: inline;
+}

@@ -1,0 +1,43 @@
+@import url(/weblocks-common/pub/stylesheets/navigation.css);
+
+
+
+
+.horizontal-navigation .menu  {width: auto;}
+.horizontal-navigation .menu li 
+{
+    display: inline; 
+    list-style-type: none;
+    width: 500px;
+}
+
+.horizontal-navigation .menu li.selected-item
+{
+    padding-left: 0;
+    background-color: rgba(0,0,0,0);
+    color: blue;
+}
+
+.horizontal-navigation .menu ul li.selected-item span 
+{
+    padding-left: 0;
+}
+
+.horizontal-navigation .menu ul li span {
+    padding-left: 0;
+    display: inline-block;
+    width: 150px;
+}
+
+.horizontal-navigation .menu ul li .label
+{
+    width: auto;
+    color: blue;
+}
+.horizontal-navigation .menu ul li a 
+{
+    display: inline;
+    text-decoration: none;
+    padding-left: 0;
+    color: blue;
+}
