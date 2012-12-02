@@ -11,7 +11,7 @@
     :author ""
     :licence ""
     :description "git-browser"
-    :depends-on (:weblocks)
+    :depends-on (:weblocks :alexandria :wo-git)
     :components ((:file "git-browser")
 		 (:module conf
 		  :components ((:file "stores"))
@@ -20,6 +20,11 @@
 		  :components ((:file "init-session")
 			       (:file "unmerged-view")
 			       (:file "master-view")
-			       (:file "neighborhood-view"))
+			       (:file "neighborhood-view")
+			       (:file "simple-list")
+			       (:file "git-revision")
+			       (:file "git-revision-store")
+			       (:file "git-interactions")
+			       (:file "master-view-widget"))
 		  :depends-on ("git-browser" conf))))
 

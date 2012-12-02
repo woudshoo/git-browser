@@ -8,6 +8,4 @@
 	     :initarg :svg-test)))
 
 (defmethod render-widget-body ((widget svg-widget) &rest args)
-  (format *weblocks-output-stream* "~A" (svg-test widget))
-  (with-html 
-    " And now some more text!"))
+  (format *weblocks-output-stream* "~A" (svg-test widget)))

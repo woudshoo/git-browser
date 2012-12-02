@@ -1,0 +1,78 @@
+
+.simple-list 
+{
+    -webkit-transform: translateZ(0);   /* This makes animations much smoother.  Don't know why  
+					   something about GPU assisted bla die bla */
+    vertical-align: top;
+    display: inline-block;
+    width: 300px;
+/*    background: yellow; */
+}
+
+.simple-list ul
+{
+    max-height: 300px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    list-style-type: none;
+    -webkit-padding-start: 0;  /* The default triggers an indentation of 40pts */
+}
+
+
+.simple-list li
+{
+/*    width: 200px;  */
+/*    transition-property: opacity, left; */
+    -webkit-transition-property: background; 
+    -webkit-transition-duration: 0.5s;
+    -webkit-transition-timing-function: ease-out; 
+    background: white;
+}
+
+.simple-list li:hover
+{
+/*    width: 200px;  */
+/*    transition-property: opacity, left; */
+    -webkit-transition-property: background;
+    -webkit-transition-duration: 0.1s; 
+    -webkit-transition-timing-function: ease-out;
+    background: red;
+}
+
+.simple-list .label
+{
+    vertical-align: text-top;
+    display: inline-block;
+    width: 70%;
+
+}
+
+.simple-list .entry
+{
+/*    display: inline; */
+    position: relative;
+/*    width: 100%; */
+}
+
+
+.simple-list .actions
+{
+    display: inline-block; 
+    position: absolute; 
+    right: 00px; 
+/*    background: blue; */
+/*    padding-left: 10px; */
+}
+
+
+.actions a
+{
+    margin-left: 5pt;
+}
+.simple-list .action
+{
+/*    position: static;*/
+    display: inline;
+/*    width: 50px; */
+}
+

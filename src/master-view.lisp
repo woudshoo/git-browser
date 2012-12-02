@@ -4,8 +4,17 @@
   (let ((master-widget (make-instance 'widget)))
     (setf (widget-children master-widget)
 	  (list
-	   (make-widget  "This will contain the master view")
-	   (make-widget (lambda (&rest args) 
+	   (make-widget (lambda (&rest args) (declare (ignore args))
+				(with-html
+				  (:h2 "Master View"))))
+	   (make-instance 'master-view-widget)))
+    master-widget))
+
+
+
+;	   (make-widget  "This will contain the master view")
+;	   (make-instance 'svg-widget :svg-file (make-tmp-name "master" "svg"))
+#+nil  (make-widget (lambda (&rest args) 
 			  (with-html 
 			    (:h3 "Testing internal navigation")
 			    (:ol
@@ -21,6 +30,3 @@
 			       (lambda (&rest args)
 				 (redirect "/neighborhood"))
 			       "An Action Link (doing nothing right now)"))))))
-
-	   (make-widget "And some other text bla die bla")))
-    master-widget))

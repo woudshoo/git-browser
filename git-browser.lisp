@@ -1,7 +1,7 @@
 
 (defpackage #:git-browser
   (:use :cl :weblocks
-        :f-underscore :anaphora)
+        :f-underscore :anaphora :wo-git :wo-graph :wo-graph-functions)
   (:import-from :hunchentoot #:header-in
 		#:set-cookie #:set-cookie* #:cookie-in
 		#:user-agent #:referer)

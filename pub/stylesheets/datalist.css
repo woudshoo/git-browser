@@ -165,3 +165,74 @@
   display: none;
 }
 
+
+/* MY MODIFICATIONS */
+
+.datalist-body ul
+{ 
+    display: inline;
+}
+
+.datalist .datalist-body ol li li, .datalist .datalist-body ul li li
+{
+    display: inline;
+}
+
+.datalist-body ol li li
+{
+    display: inline;
+}
+
+.datalist-body .label
+{
+    display: inline;
+}
+/*
+.datalist-body li
+{ 
+    display: inline;
+}
+
+*/
+
+.datalist-body .operations
+{
+    display: inline-block;
+}
+
+.datalist .view 
+{
+    height: auto;
+    margin-bottom: 0;
+}
+
+
+
+.datalist .view .extra-top-1
+{
+    height: 0;
+}
+
+.datalist .view .extra-top-2
+{
+    margin-top: 0;
+    height: 0;
+}
+
+.datalist .view .extra-bottom-1
+{
+    height: 0;
+}
+
+
+.datalist .view .extra-bottom-2
+{
+    margin-top: 0;
+    height: 0;
+}
+
+.datalist .view .extra-bottom-3
+{
+    margin-top: 0;
+    height: 0;
+}
