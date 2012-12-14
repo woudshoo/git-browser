@@ -45,6 +45,18 @@ Each item will have the item ops rendered next them them."))
 
 
 
+(defmethod render-action ((obj simple-list) item name function rest)
+  (apply #'render-link
+	 (lambda (&rest args)
+	   (declare (ignore args))
+	   (funcall function obj item))
+	 name rest))
+
+(defmethod actions-renderer ((obj simple-list) item)
+  (loop :for (name function . rest) :in (item-ops obj)
+     :do
+     (render-action obj item name function rest)))
+
 (defmethod render-items ((obj simple-list))
   (render-list (find-persistent-objects (data-store obj) nil :select (select-tag obj))
 	       :orderedp nil
@@ -54,15 +66,7 @@ Each item will have the item ops rendered next them them."))
 				    (:div :class "label"
 					  (funcall (data-item-renderer obj) item))
 				    (:div :class "actions"
-					  (loop :for (name function . rest) :in  (item-ops obj)
-					     :do
-					     (with-html
-					       (let ((function function))
-						 (apply #'render-link 
-							(lambda (&rest args) 
-							  (declare (ignore args))
-							  (funcall function obj item))
-							name rest))))))))))
+					  (actions-renderer obj item)))))))
 
 
 (defmethod render-widget-body ((obj simple-list) &rest args)

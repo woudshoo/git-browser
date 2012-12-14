@@ -7,6 +7,10 @@
   (:documentation "Represents a list of git revisions."))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Default store API implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defmethod persist-object ((store git-revision-store) (revision git-revision) &key)
   "Add rivisions to the store."
   (setf (gethash (sha revision) (data store)) revision))
@@ -45,3 +49,51 @@ Also there are special classifications such as :boundary"
   (declare (ignore args))
   (length (objects-for-classification store (or select :normal))))
 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Extension
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(defmethod selected-SHAs ((store git-revision-store) &key select)
+  "Returns from the store all SHAs that are marked with SELECT.
+This is similar to FIND-PERSISTENT-OBJECTS ... :select select, but 
+instead of returning git-revision objects, it will return the SHAs"
+  (mapcar #'sha (find-persistent-objects store nil :select select)))
+
+(defun selected-SHAs* (&key select)
+  "Same as the version without the '*', but will return the standard store for the version."
+  (selected-shas (webapp-session-value *revision-store-key*) :select select))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; NOT USED YET
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defclass git-revision-store-view ()
+  ((store :accessor store 
+	  :initarg :store
+	  :documentation "Underlying git revision store, will be filtered by the select ivar")
+   (select :accessor select
+	   :initarg :select
+	   :documentation "Selects a subset from the underlying store")))
+
+
+(defmethod persist-object ((store git-revision-store-view) (revision git-revision) &key)
+  "Add a revision to the store.  Will not check or change the select tag"
+  (persist-object (store store) revision))
+
+(defmethod clean-store ((store git-revision-store-view))
+  (error "Operation clean-store not permitted on the view"))
+
+(defmethod find-persistent-object-by-id ((store git-revision-store-view) class-name (id integer))
+  (find-persistent-object-by-id (store store) class-name id))
+
+(defmethod find-persistent-objects ((store git-revision-store-view) class-name
+				    &rest args)
+  (apply #'find-persistent-objects (store store) class-name 
+	 :select (select store) args))
+
+(defmethod count-persistent-objects ((store git-revision-store-view) class-name
+				     &rest args)
+  (apply #'count-persistent-objects (store store) class-name
+	 :select (select store) args))

@@ -11,7 +11,7 @@
     :author ""
     :licence ""
     :description "git-browser"
-    :depends-on (:weblocks :alexandria :wo-git)
+    :depends-on (:weblocks :alexandria :wo-git :fset)
     :components ((:file "git-browser")
 		 (:module conf
 		  :components ((:file "stores"))

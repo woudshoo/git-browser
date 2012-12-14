@@ -60,6 +60,15 @@ the edge gray if one of the nodes is not interesting."
 	'(:color "black")
 	'(:color "gray"))))
 
+(defun make-color-edge-attributes ()
+  "Returns a edge attribute function which will color
+the edge gray if one of the nodes is not interesting."
+  (lambda (e g)
+    (declare (ignore g))
+    (list :color
+	  (if (= 3 (length e))
+	      "gray"
+	      "black"))))
 
 (defun make-default-node-attribute (&optional &key (color) (url-fn) (id-fn))
   "Returns a node attribute function which will show either

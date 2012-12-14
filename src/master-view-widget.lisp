@@ -3,11 +3,6 @@
 
 ;;; what a mess.
 
-;;;
-
-;; (defwidget svg-content-widget ()
-;;    ((svg-content :accessor svg-content :initform nil)))
-
 
 (defun quote-string (string)
   (format nil "~S" string))
@@ -17,72 +12,6 @@
 			"javascript:~A" (ps:ps* `(mad this  ,(vertex-or-name-to-string v))))))
 
 
-(defun dead-revisions ()
-  (let ((store (webapp-session-value *revision-store-key*)))
-    (loop :for rev :in (find-persistent-objects store nil :select :dead)
-       :collect (sha rev))))
-
-
-;; ;;  onclick=\"initiateAction(\"mark-as-dead\",\"\"); return false;\"
-;; (defmethod ensure-svg-content-is-filled ((widget svg-content-widget))
-;;   (unless (svg-content widget)
-;;     (create-svg-graph "master"
-;; 		      (lambda (s)
-;; 			(classified-by-edge-graph *default-graph* s
-;; 						  :node-attributes
-;; 						  (make-default-node-attribute
-;; 						   :url-fn #'make-url-for-mark-as-dead
-;; 						   :id-fn #'(lambda (v) (quote-string (vertex-or-name-to-string v))))
-;; 						  :dead-revisions (dead-revisions)))
-;; 		      nil)
-;;     (setf (svg-content widget)
-;; 	  (alexandria:read-file-into-string (make-tmp-name "master" "svg")))))
-
-
-;; function listProperties(obj) {
-;;    var propList = "";
-;;    for(var propName in obj) {
-;;       if(typeof(obj[propName]) != "undefined") {
-;;          propList += (propName + ", ");
-;;       }
-;;    }
-;;    alert(propList);
-;; }
-
-;; (defmethod render-widget-body ((widget svg-content-widget) &rest args)
-;;   (declare (ignore args))
-;;   (ensure-svg-content-is-filled widget)
-;;   (send-script "
-;; function listProperties(obj) {
-;;    var propList = '';
-;;    for(var propName in obj) {
-;;       if(typeof(obj[propName]) != 'undefined') {
-;;          propList += (propName + ': ' + obj[propName] + ', ');
-;;       }
-;;    }
-;;    alert(propList);
-;; }"
-
-;; )
-
-;;   (send-script (ps:ps* `(defun mad (node id) 
-;; 			  (let* ((element  (document.get-element-by-id id))
-;; 				 (child (elt (element.get-elements-by-tag-name "polygon") 0)))
-;; ;			    (alert (element.get-attribute-n-s nil "visibility"))
-;; ;			    (element.set-attribute "visibility" "hidden")
-;; 			    (child.set-attribute "fill" "gray")
-;; ;			    (list-properties child)
-;; ;			    (child.set-attribute "style" "background-color: red;")
-;; ;			    (setf element.style.background-color "green")
-;; 			    )
-;; 			  (alert node)
-;; ;			  (setf node.style.background-color "green")
-;; 			  (initiate-action-with-args "mark-as-dead" "" (ps:create :id id))
-;; 			  (return "hallo"))))
-;;   (with-html
-;;     (:div :class "master-view"
-;; 	  (render-widget (svg-content widget))
-;; #+nil	  (format *weblocks-output-stream* (svg-content widget)))))
 
 (defun create-master-svg ()
   (create-svg-graph "master"
@@ -92,7 +21,7 @@
 						(make-default-node-attribute
 						 :url-fn #'make-url-for-mark-as-dead
 						 :id-fn #'(lambda (v) (quote-string (vertex-or-name-to-string v))))
-						:dead-revisions (dead-revisions)))
+						:dead-revisions (selected-shas* :select :dead)))
 		    nil))
 
 (defwidget master-view-widget ()

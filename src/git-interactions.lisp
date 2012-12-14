@@ -83,8 +83,6 @@ from the logical path tmp, so be carefull."
 
 
 
-
-
 (defun simplify-node-name (name)
   "Simplifies a full revision/tag name.  Typically they start with
 lots of junk like 'refs/remove/...'  so we shorten them a bit with
@@ -94,13 +92,37 @@ this function."
 			  " "))
 
 
-
-
 (defun vertex-or-name-to-string (vertex)
   (etypecase vertex
     (integer (format nil "~(~40,'0X~)" vertex))
     (string vertex)))
 
+
+(defun named-boundary-revisions (graph dead-revisions)
+  "Return all revisions from the graph that:
+1 - are on the boundary (no children or no parents)
+2 - have a name
+3 - are not mentioned in the dead-revisions list."
+  (wo-util:remove-from-set
+   (remove-duplicates
+    (mapcar (lambda (v) (name-or-rev-to-vertex v graph)) 
+	    (wo-git:boundary-names graph)))
+   dead-revisions
+   :test #'equalp))
+
+
+(defun remove-classifications-with-empty-sources-or-targets (classification)
+  "Removes from the classification map all entries which have eiter an empty source list or
+empty target list."
+  (mapc (lambda (k)
+	  (unless (and (car k) (cdr k))
+	    (remhash k classification)))
+	(alexandria:hash-table-keys classification))
+  classification)
+
+(defun classification-by-both-sided-reachibility (boundary-verticies graph)
+  (remove-classifications-with-empty-sources-or-targets
+   (wo-graph-functions:classify-by-reacheability boundary-verticies graph)))
 
 (defun classified-by-edge-graph (graph stream &key 
 						(node-attributes (make-default-node-attribute))
@@ -108,54 +130,146 @@ this function."
 								  (lambda (e g) (declare (ignore e g)) t)))
 						dead-revisions)
   "Just for testing, very very inefficient."
-  (let* ((edge-vertices  (wo-util:remove-from-set (mapcar (lambda (v) (name-or-rev-to-vertex v graph))
-							  (wo-git::boundary-names graph))
-						  dead-revisions
-						  :test #'equalp))
-	 (classification (wo-graph-functions::classify-by-reacheability edge-vertices graph))
+  (let* ((boundary-verticies (named-boundary-revisions graph dead-revisions))
+	 (classification (classification-by-both-sided-reachibility boundary-verticies graph))
 	 (result (make-instance 'wo-git::git-graph))
 	 (seen-edges (make-hash-table :test #'equalp))
 	 (v-v-map (make-hash-table :test #'equalp))   ;;; Maps original verticies to vertices in reduced graph.
 	 (counter 0))
 
-    (setf (wo-git::name-map result) (make-hash-table :test #'equalp)) ;; Make map from new vertix to name
+    (setf (wo-git::name-map result) (make-hash-table :test #'equalp)) ;; Make map from new vertex to name
 
-
+    (setf *dd-cl* classification)
     (maphash (lambda (k v)
 	       "Adds vertices from classification to new graph.
 The new graph has nodes identified by the 'counter'.  Also
 this method updates the v-v map so we can construct the edges in the next phase."
-	       (let ((id (if (eq (caar k) (cadr k))
-			     (vertex-or-name-to-string (caar k))
-			     (incf counter))))
-
+	       (let* ((candidates (fset:intersection (car k) (cdr k)))
+		      (id (if (eql 1 (fset:size candidates))
+			      (fset:arb candidates)
+			      (incf counter))))
 		 (wo-graph:add-vertex id result)
 		 (setf (gethash id (wo-git::name-map result))
-		       (if (eq (caar k) (cadr k))
-			   (wo-git:vertex-names (caar k) graph)
+		       (if (eql 1 (fset:size candidates))
+			   (wo-git:vertex-names (fset:arb candidates) graph)
 			   (list (format nil "#: ~D" (length v)))))
 
 		 (loop :for v2 :in v :do
 		    (setf (gethash v2 v-v-map) id))))
 	     classification)
-    
+    (setf *dd-v-v-map* v-v-map)
     (setf (wo-git::reverse-name-map result) (wo-util:reverse-table (wo-git::name-map result)))
+  
     (loop :for v :in (wo-graph:all-vertices graph)
        :for v2 = (gethash v v-v-map)
        :do
-       (loop :for tv :in (wo-graph:targets-of-vertex v graph)
-	  :for tv2 = (gethash tv v-v-map)
-	  :do
-	  (unless (or (eql v2 tv2) (gethash (cons v2 tv2) seen-edges))
-	    (wo-graph:add-edge v2 tv2 nil result)
-	    (setf (gethash (cons v2 tv2) seen-edges) t))))
+       (when v2
+	 (loop :for tv :in (wo-graph:targets-of-vertex v graph)
+	    :for tv2 = (gethash tv v-v-map)
+	    :do
+	    (unless (or (not v2) (not tv2) (equal v2 tv2) (gethash (cons v2 tv2) seen-edges))
+	      (wo-graph:add-edge v2 tv2 nil result)
+	      (setf (gethash (cons v2 tv2) seen-edges) t)))))
 
-
+    (setf *dd-g* result)
     (write-to-dot stream result
 		  :node-attributes node-attributes
 		  :edge-attributes edge-attributes
 		  :node-to-id #'vertex-or-name-to-string)))
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defparameter *default-reducers*
+  (list
+   (wo-graph-functions:make-single-sided-reducer
+    #'wo-graph:sources-of-vertex
+    #'wo-graph:targets-of-vertex
+    0 nil)
+   (wo-graph-functions:make-single-sided-reducer
+    #'wo-graph:targets-of-vertex
+    #'wo-graph:sources-of-vertex
+    0 nil)
+   (wo-graph-functions:make-single-sided-reducer
+    #'wo-graph:targets-of-vertex
+    #'wo-graph:sources-of-vertex
+    1 (lambda (sr tg g) (wo-graph:add-edge sr tg
+					   (make-array 3 :initial-contents (list 'reduced
+										 sr
+										 tg))
+					   g)))
+   (wo-graph-functions:make-single-sided-reducer
+    #'wo-graph:sources-of-vertex
+    #'wo-graph:targets-of-vertex
+    1 (lambda (tg sr g) (wo-graph:add-edge sr tg
+					   (make-array 3 :initial-contents (list 'reduced
+										 sr
+										 tg))
+					   g)))))
+
+(defun neighborhood-graph (graph stream &key
+					  (distance 2)
+					  start-vertices
+					  end-vertices
+					  selected-vertices
+					  dead-revisions
+					  (reducers *default-reducers*))
+  (let* ((neighborhood-vertices 
+	  (wo-util:add-non-nil
+	   (wo-graph-functions:neighborhood selected-vertices graph 
+					    :max-distance distance)
+	   (union start-vertices end-vertices)))
+	 (extended-neighborhood-vertices 
+	  (wo-util:add-non-nil
+	   (wo-graph-functions:neighborhood selected-vertices graph 
+					    :max-distance (+ 1 distance))
+	   (union start-vertices end-vertices))))
+
+    (setf *dd-n* extended-neighborhood-vertices)
+    (labels ((selector (v g)
+	       (declare (ignore g))
+	       (member v extended-neighborhood-vertices :test #'equalp))
+
+	     (color (v)
+	       (cond 
+		 ((member v selected-vertices :test #'equalp) "red")
+		 ((member v start-vertices :test #'equalp) "blue")
+		 ((member v end-vertices :test #'equalp) "green")
+		 ((member v neighborhood-vertices :test #'equalp) "black")
+		 (t "gray"))))
+      
+      (let ((result (wo-graph-functions:simplify graph :selector #'selector
+						 :reducers reducers)))
+	(write-to-dot stream result
+		      :node-attributes (make-default-node-attribute :color #'color)
+		      :edge-attributes (make-color-edge-attributes)
+		      :node-to-id #'vertex-or-name-to-string)
+	result))))
 
 
+
+(defun unmerged-graph (starters enders graph stream)
+  (let ((outgoing-a (wo-graph-functions:neighborhood starters graph :selector #'wo-graph:targets-of-vertex))
+	(incoming-b (wo-graph-functions:neighborhood enders graph :selector #'wo-graph:sources-of-vertex)))
+
+    (labels ((selector (v g)
+	       (or (member v starters :test #'equalp)
+		   (and (wo-git:vertex-names v g)
+			(member v outgoing-a :test #'equalp)
+			(not (member v incoming-b :test #'equalp))
+			(not (member v *dead-revisions* :test #'equalp)))))
+	     (color (v)
+	       (cond
+		 ((member v starters) "blue")
+		 ((member v enders) "green")
+		 ((not (member v incoming-b :test #'equalp)) "black")
+		 (t "gray"))))
+
+      (let ((result (wo-graph-functions:simplify graph :selector #'selector
+						 :reducers *default-reducers*)))
+	(write-to-dot stream result
+		      :graph-attributes '(:rankdir "LR")
+		      :node-attributes (make-default-node-attribute :color #'color)
+		      :edge-attributes (make-default-edge-attributes #'selector)
+		      :node-to-id #'vertex-or-name-to-string)
+	result))))
