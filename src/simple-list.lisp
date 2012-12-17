@@ -23,6 +23,9 @@ Note, I am not sure if anything besides a string is allowed for label. ")
    (select-tag :accessor select-tag
 	       :initform nil
 	       :initarg :select-tag)
+   (order-by :accessor order-by
+	     :initform nil
+	     :initarg :order-by)
    (caption  :accessor caption
 	     :initform nil
 	     :initarg :caption))
@@ -58,7 +61,9 @@ Each item will have the item ops rendered next them them."))
      (render-action obj item name function rest)))
 
 (defmethod render-items ((obj simple-list))
-  (render-list (find-persistent-objects (data-store obj) nil :select (select-tag obj))
+  (render-list (find-persistent-objects (data-store obj) nil 
+					:order-by (order-by obj)
+					:select (select-tag obj))
 	       :orderedp nil
 	       :render-fn (lambda (item)
 			    (with-html

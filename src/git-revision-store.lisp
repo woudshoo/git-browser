@@ -21,7 +21,7 @@ The classification parameter is a keyword and is matched against the classificat
 of the git revisions.   A classification of :all returns all elements.
 Also there are special classifications such as :boundary"
   (case classification
-    (:all  (alexandria:hash-table-values (data store)))
+    (:all (alexandria:hash-table-values (data store)))
     (t (loop :for revision :being :the :hash-value :in (data store)
 	    :when (eql (classification revision) classification) :collect revision))))
 

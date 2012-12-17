@@ -28,7 +28,7 @@
 	(make-instance 'action-widget
 		       :function (lambda (&rest args)
 				   (declare (ignore args))
-				   (clear-cache)
+				   (clear-cache "neighborhood")
 				   (create-neighborhood-svg)
 				   (mark-dirty widget))
 		       :label "Regenerate"))
@@ -63,7 +63,7 @@
 	(make-instance 'action-widget
 		       :function (lambda (&rest args)
 				   (declare (ignore args))
-				   (clear-cache)
+				   (clear-cache "unmerged")
 				   (create-unmerged-svg)
 				   (mark-dirty widget))
 		       :label "Regenerate"))
@@ -154,6 +154,7 @@
 	     
 	     ,(make-instance 'simple-list 
 			     :data-store store
+			     :order-by '(label :asc)
 			     :item-ops `(("*" ,(lambda (a b)
 						       (declare (ignore a))
 							   (setf (classification b) :selected)

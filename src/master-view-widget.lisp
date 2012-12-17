@@ -49,7 +49,7 @@
 								  :select :candidate-dead)
 					 :do
 					 (setf (classification revision) :dead))
-				      (clear-cache)
+				      (clear-cache "master")
 				      (create-master-svg)
 				      (mark-dirty widget))
 		       :label "Mark as Dead, Regenerate Master"))
