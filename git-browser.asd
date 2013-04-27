@@ -17,7 +17,10 @@
 		  :components ((:file "stores"))
 		  :depends-on ("git-browser"))
 		 (:module src
-		  :components ((:file "init-session")
+		  :components ((:file "file-utilities")
+			       (:file "init-session")
+			       (:file "svg-container")
+			       (:file "dot-utilities")
 			       (:file "unmerged-view")
 			       (:file "master-view")
 			       (:file "neighborhood-view")

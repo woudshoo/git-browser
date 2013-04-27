@@ -122,7 +122,9 @@ empty target list."
 
 (defun classification-by-both-sided-reachibility (boundary-verticies graph)
   (remove-classifications-with-empty-sources-or-targets
-   (wo-graph-functions:classify-by-reacheability boundary-verticies graph)))
+   (wo-graph-functions:classify-by-reacheability 
+    graph #'targets-of-vertex #'sources-of-vertex 
+    :selector-p (lambda (v g) (declare (ignore g)) (member v boundary-verticies)))))
 
 (defun classified-by-edge-graph (graph stream &key 
 						(node-attributes (make-default-node-attribute))
