@@ -27,6 +27,7 @@
     -webkit-transition-duration: 0.5s;
     -webkit-transition-timing-function: ease-out; 
     background: white;
+    margin-right: 30px;
 }
 
 .simple-list li:hover

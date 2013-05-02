@@ -15,6 +15,7 @@
 		      (neighborhood-graph *default-graph* s
 					  :start-vertices (selected-shas* :select :starters)
 					  :end-vertices (selected-shas* :select :enders)
+					  :dead-revisions (selected-shas* :select :dead)
 					  :selected-vertices (selected-shas* :select :selected)))))
 
 (defwidget neighborhood-view-widget ()
@@ -48,7 +49,8 @@
 		      (unmerged-graph (selected-shas* :select :starters)
 				      (selected-shas* :select :enders)
 				      *default-graph*
-				      s))))
+				      s
+				      :dead-revisions (selected-shas* :select :dead)))))
 
 
 (defwidget unmerged-view-widget ()

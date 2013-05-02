@@ -249,7 +249,7 @@ this method updates the v-v map so we can construct the edges in the next phase.
 
 
 
-(defun unmerged-graph (starters enders graph stream)
+(defun unmerged-graph (starters enders graph stream &key dead-revisions)
   (let ((outgoing-a (wo-graph-functions:neighborhood starters graph :selector #'wo-graph:targets-of-vertex))
 	(incoming-b (wo-graph-functions:neighborhood enders graph :selector #'wo-graph:sources-of-vertex)))
 
@@ -258,7 +258,7 @@ this method updates the v-v map so we can construct the edges in the next phase.
 		   (and (wo-git:vertex-names v g)
 			(member v outgoing-a :test #'equalp)
 			(not (member v incoming-b :test #'equalp))
-			(not (member v *dead-revisions* :test #'equalp)))))
+			(not (member v dead-revisions :test #'equalp)))))
 	     (color (v)
 	       (cond
 		 ((member v starters) "blue")
