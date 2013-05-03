@@ -121,6 +121,8 @@ empty target list."
   classification)
 
 (defun classification-by-both-sided-reachibility (boundary-verticies graph)
+  "Returns a classification map containing all vertices which have an ancestor and
+a descendend in the BOUNDARY-VERTICIES set."
   (remove-classifications-with-empty-sources-or-targets
    (wo-graph-functions:classify-by-reacheability 
     graph #'targets-of-vertex #'sources-of-vertex 
