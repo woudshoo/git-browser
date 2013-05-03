@@ -114,11 +114,9 @@ this function."
 (defun remove-classifications-with-empty-sources-or-targets (classification)
   "Removes from the classification map all entries which have eiter an empty source list or
 empty target list."
-  (mapc (lambda (k)
-	  (unless (and (car k) (cdr k))
-	    (remhash k classification)))
-	(alexandria:hash-table-keys classification))
-  classification)
+  (fset:filter (lambda (k v) 
+		 (declare (ignore v))
+		 (and (car k) (cdr k))) classification))
 
 (defun classification-by-both-sided-reachibility (boundary-verticies graph)
   "Returns a classification map containing all vertices which have an ancestor and
@@ -130,13 +128,12 @@ a descendend in the BOUNDARY-VERTICIES set."
 
 (defun classified-by-edge-graph (graph stream &key 
 						(node-attributes (make-default-node-attribute))
-						(edge-attributes (make-default-edge-attributes
-								  (lambda (e g) (declare (ignore e g)) t)))
+						(edge-attributes (lambda (e g) (declare (ignore g)) (if (> (length e) 2) '(:color :red))))
 						dead-revisions)
   "Just for testing, very very inefficient."
   (let* ((boundary-verticies (named-boundary-revisions graph dead-revisions))
 	 (classification (classification-by-both-sided-reachibility boundary-verticies graph))
-	 (result (make-instance 'wo-git::git-graph))
+	 (result (make-instance 'wo-git::git-graph :test #'equalp))
 	 (seen-edges (make-hash-table :test #'equalp))
 	 (v-v-map (make-hash-table :test #'equalp))   ;;; Maps original verticies to vertices in reduced graph.
 	 (counter 0))
@@ -144,23 +141,24 @@ a descendend in the BOUNDARY-VERTICIES set."
     (setf (wo-git::name-map result) (make-hash-table :test #'equalp)) ;; Make map from new vertex to name
 
     (setf *dd-cl* classification)
-    (maphash (lambda (k v)
-	       "Adds vertices from classification to new graph.
+
+    (fset:do-map (k v classification)
+      "Adds vertices from classification to new graph.
 The new graph has nodes identified by the 'counter'.  Also
 this method updates the v-v map so we can construct the edges in the next phase."
-	       (let* ((candidates (fset:intersection (car k) (cdr k)))
-		      (id (if (eql 1 (fset:size candidates))
-			      (fset:arb candidates)
-			      (incf counter))))
-		 (wo-graph:add-vertex id result)
-		 (setf (gethash id (wo-git::name-map result))
-		       (if (eql 1 (fset:size candidates))
-			   (wo-git:vertex-names (fset:arb candidates) graph)
-			   (list (format nil "#: ~D" (length v)))))
+      (let* ((candidates (fset:intersection (car k) (cdr k)))
+	     (id (if (eql 1 (fset:size candidates))
+		     (fset:arb candidates)
+		     (incf counter))))
+	(wo-graph:add-vertex id result)
+	(setf (gethash id (wo-git::name-map result))
+	      (if (eql 1 (fset:size candidates))
+		  (wo-git:vertex-names (fset:arb candidates) graph)
+		  (list (format nil "#: ~D" (length v)))))
 
-		 (loop :for v2 :in v :do
-		    (setf (gethash v2 v-v-map) id))))
-	     classification)
+	(loop :for v2 :in v :do
+	   (setf (gethash v2 v-v-map) id))))
+
     (setf *dd-v-v-map* v-v-map)
     (setf (wo-git::reverse-name-map result) (wo-util:reverse-table (wo-git::name-map result)))
   
@@ -176,6 +174,12 @@ this method updates the v-v map so we can construct the edges in the next phase.
 	      (setf (gethash (cons v2 tv2) seen-edges) t)))))
 
     (setf *dd-g* result)
+    (setf result (wo-graph-functions:simplify 
+		  result 
+		  :selector (constantly nil) #+nil (lambda (v g)
+			      (< (wo-graph-functions:vertex-minimum-degree v g) 1))
+		  :reducers *trivial-edge-reducers*))
+    (setf *dd-r* result)
     (write-to-dot stream result
 		  :node-attributes node-attributes
 		  :edge-attributes edge-attributes
@@ -183,6 +187,35 @@ this method updates the v-v map so we can construct the edges in the next phase.
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defparameter *trivial-edge-reducers*
+  (list 
+   (wo-graph-functions:make-double-sided-reducer
+    #'wo-graph:targets-of-vertex
+    #'wo-graph:sources-of-vertex
+    1 1
+    (lambda (sr tg g) (wo-graph:add-edge sr tg
+					 (make-array 3 :initial-contents (list 'reduced
+									       sr
+									       tg))
+					 g)))
+#+nil   (wo-graph-functions:make-single-sided-reducer
+    #'wo-graph:targets-of-vertex
+    #'wo-graph:sources-of-vertex
+    1 
+    (lambda (sr tg g) (wo-graph:add-edge sr tg
+					 (make-array 3 :initial-contents (list 'reduced
+									       sr
+									       tg))
+					 g)))
+#+nil   (wo-graph-functions:make-single-sided-reducer
+	    #'wo-graph:sources-of-vertex
+	    #'wo-graph:targets-of-vertex
+	    1 (lambda (tg sr g) (wo-graph:add-edge sr tg
+						   (make-array 3 :initial-contents (list 'reduced
+											 sr
+											 tg))
+						   g))) )))
 
 (defparameter *default-reducers*
   (list
