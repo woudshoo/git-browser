@@ -215,7 +215,7 @@ this method updates the v-v map so we can construct the edges in the next phase.
 						   (make-array 3 :initial-contents (list 'reduced
 											 sr
 											 tg))
-						   g))) )))
+						   g))) ))
 
 (defparameter *default-reducers*
   (list
