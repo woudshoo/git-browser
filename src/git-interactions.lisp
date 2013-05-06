@@ -10,6 +10,8 @@
 (defparameter *default-graph* nil)
 (defparameter *revisions-store* nil)
 
+(defparameter *ignore-names* (cl-ppcre:create-scanner "/[0-9]+$"))
+
 (defparameter *dead-revisions*  '("F0BCC1A07FFB8E0BC0098B679C5BB79C92208337"
 				  "7091DFADB75F1D895F527DCF880915DD243C8047"
 				  "FEBF3F4A1780FA249C7ADC3C58DC7FF75751D61C"
@@ -58,8 +60,12 @@
 				  "B4B4143080F78DFD743169D1DB5DF95451BC66E0"
 				  "AD76190277BFED9F465E8FF3A6F76B596E471428"
 				  ))
+
 (defun read-graph (&optional (git-project *git-project*))
-  (setf *default-graph* (wo-git:get-git-graph git-project))
+  (setf *default-graph* (wo-git:get-git-graph git-project 
+					      (complement 
+					       (lambda (x) 
+						 (cl-ppcre:scan *ignore-names* x)))))
   (setf *revisions-store* (make-instance 'git-revision-store))
   (loop :for name :in (all-names *default-graph*)
      :do
