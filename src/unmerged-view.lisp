@@ -4,41 +4,6 @@
 
 
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Neighborhood
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun create-neighborhood-svg ()
-  (create-svg-graph "neighborhood"
-		    (lambda (s)
-		      (neighborhood-graph *default-graph* s
-					  :start-vertices (selected-shas* :select :starters)
-					  :end-vertices (selected-shas* :select :enders)
-					  :dead-revisions (selected-shas* :select :dead)
-					  :selected-vertices (selected-shas* :select :selected)))))
-
-(defwidget neighborhood-view-widget ()
-  ((action :accessor action)
-   (svg-content :accessor svg-content
-		:initform
-		(make-instance 'svg-container :svg-file-name (make-tmp-name "neighborhood" "svg")))))
-
-(defmethod initialize-instance :after ((widget neighborhood-view-widget) &key &allow-other-keys)
-  (setf (action widget)
-	(make-instance 'action-widget
-		       :function (lambda (&rest args)
-				   (declare (ignore args))
-				   (clear-cache "neighborhood")
-				   (create-neighborhood-svg)
-				   (mark-dirty widget))
-		       :label "Regenerate"))
-  (create-neighborhood-svg)
-  (setf (widget-children widget)
-	(list (action widget)
-	      (svg-content widget))))
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Unmerged
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -79,101 +44,37 @@
 (defun make-unmerged-view-widget ()
   (let* ((widget (make-instance 'widget))
 	 (store (webapp-session-value *revision-store-key*))
-	 (starters-widget (make-instance 
-			   'simple-list :data-store store
-			   :select-tag :starters 
-			   :item-ops `(("Back" ,(lambda (w d)
-							(setf (classification d) :normal)
-							(mark-dirty w)) 
-					       :render-fn ,(lambda (label) 
-								   (declare (ignore label))
-								   (with-html 
-									     (:svg :width "10pt" :height "10pt" 
-										   (:circle :cx "5pt" :cy "5pt" 
-											    :r "4pt" 
-											    :stroke "black"))))))
-			   :data-item-render (lambda (o) (with-html (str (label o))))
-			   :caption "Start Revisions"))
-	 (enders-widget (make-instance 
-			   'simple-list :data-store store
-			   :select-tag :enders 
-			   :item-ops `(("Back" ,(lambda (w d)
-							(setf (classification d) :normal)
-							(mark-dirty w)) 
-					       :render-fn ,(lambda (label) 
-								   (declare (ignore label))
-								   (with-html 
-									     (:svg :width "10pt" :height "10pt" 
-										   (:circle :cx "5pt" :cy "5pt" 
-											    :r "4pt" 
-											    :stroke "black"))))))
-			   :data-item-render (lambda (o) (with-html (str (label o))))
-			   :caption "End Revisions"))
-	 (dead-widget (make-instance 
-			   'simple-list :data-store store
-			   :select-tag :dead
-			   :item-ops `(("Back" ,(lambda (w d)
-							(setf (classification d) :normal)
-							(mark-dirty w)) 
-					       :render-fn ,(lambda (label)   (declare (ignore label))
-								   (with-html 
-								     (:svg :width "10pt" :height "10pt" 
-										   (:circle :cx "5pt" :cy "5pt" 
-											    :r "4pt" 
-											    :stroke "black"))))))
-			   :data-item-render (lambda (o) (with-html (str (label o))))
-			   :caption "Dead Revisions"))
-	 (selected-widget (make-instance 
-			   'simple-list :data-store store
-			   :select-tag :selected
-			   :item-ops `(("Back" ,(lambda (w d)
-							(setf (classification d) :normal)
-							(mark-dirty w)) 
-					       :render-fn ,(lambda (label)   (declare (ignore label))
-								   (with-html 
-								     (:svg :width "10pt" :height "10pt" 
-										   (:circle :cx "5pt" :cy "5pt" 
-											    :r "4pt" 
-											    :stroke "black"))))))
-			   :data-item-render (lambda (o) (with-html (str (label o))))
-			   :caption "Selected Revisions")))
+	 (starters-widget (make-revision-list-widget "Start Revisions" :starters store))
+	 (enders-widget (make-revision-list-widget "End Revisions" :enders store))
+	 (dead-widget (make-revision-list-widget "Dead Revisions" :dead store))
+	 (selected-widget (make-revision-list-widget "Selected Revisions" :selected store)))
 
-    (setf (widget-children widget :test) 
-	  `(
-	     ,(make-instance 'simple-list 
-			     :data-store store
-			     :order-by '(label :asc)
-			     :item-ops `(("*" ,(lambda (a b)
-						       (declare (ignore a))
-							   (setf (classification b) :selected)
-							   (mark-dirty selected-widget) nil)
-						:render-fn
-						,(lambda (label) (with-html (str label))))
-					 ("D" ,(lambda (a b)
-						       (declare (ignore a))
-							   (setf (classification b) :dead)
-							   (mark-dirty starters-widget)
-							   (mark-dirty dead-widget) nil)
-						:render-fn
-						,(lambda (label) (with-html (str label))))
-					 ("S" ,(lambda (a b)
-							   (declare (ignore a))
-							   (setf (classification b) :starters)
-							   (mark-dirty starters-widget)))
-					 ("E" ,(lambda (a b)
-							   (declare (ignore a))
-							   (setf (classification b) :enders)
-							   (mark-dirty enders-widget))))
-			     :data-item-render (lambda (o)
-						 (with-html
-						   (str (label o))))
-			     :select-tag :all
-			     :caption "All Revisions")
-	     ,starters-widget
-	     ,enders-widget
-	     ,dead-widget
-	     ,selected-widget
-	     ,(make-instance 'unmerged-view-widget)))
+    (flet ((make-item-op (label classification mark-as-dirty)
+	     (list label (lambda (a b)
+			   (declare (ignore a))
+			   (setf (classification b) classification)
+			   (mapc #'mark-dirty (alexandria:ensure-list mark-as-dirty)))
+		   :render-fn (lambda (label) (with-html (str label))))))
+
+      (setf (widget-children widget :test) 
+	    `(
+	      ,(make-instance 'simple-list 
+			      :data-store store
+			      :order-by '(label :asc)
+			      :item-ops `(,(make-item-op "*" :selected selected-widget)
+					   ,(make-item-op "D" :dead `(,starters-widget ,dead-widget))
+					   ,(make-item-op "S" :starters starters-widget)
+					   ,(make-item-op "E" :enders enders-widget))
+			      :data-item-render (lambda (o)
+						  (with-html
+						    (str (label o))))
+			      :select-tag :all
+			      :caption "All Revisions")
+	       ,starters-widget
+	       ,enders-widget
+	       ,dead-widget
+	       ,selected-widget
+	       ,(make-instance 'unmerged-view-widget))))
     
     widget))
 

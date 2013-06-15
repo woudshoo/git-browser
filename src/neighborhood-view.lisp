@@ -4,26 +4,42 @@
   (let ((neighborhood-widget (make-instance 'widget)))
     (setf (widget-children neighborhood-widget)
 	  (list
-	   (make-widget "This will contain the neighborhood view")))
+	   (make-widget "This will contain the neighborhood view")
+	   (make-instance 'neighborhood-view-widget)))
     neighborhood-widget))
 
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Neighborhood
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod render-widget-body ((widget wrapped-login-widget) &rest args)
-;;  (weblocks::update-widget-parameters widget :get (hunchentoot:get-parameters*))
-  (with-html 
-    (:h2 "A first Widget!")
-    "Testing the conditional login widget, but also now the uri mixin."
-    (:p "The parameter 'uri' is bound to the test-uri slot and we will see if it works.
-The value of the test-uri slot is: ")
-    (str (format nil "~A" (test-uri widget)))
-    " And the slot map: "
-    (str (format nil "~A" (uri-parameters-slotmap widget)))
-    " The slot map values: "
-    (str (format nil "~A" (weblocks::uri-parameter-values widget)))
-    " And the last update value: "
-    (str (format nil "~A" (last-update-value widget))))
-  (if (webapp-session-value *authentication-key*)
-      (apply #'render-widget-body (success-widget widget) args)
-      (apply #'render-widget-body (login-widget widget) args)))
+(defun create-neighborhood-svg ()
+  (create-svg-graph "neighborhood"
+		    (lambda (s)
+		      (neighborhood-graph *default-graph* s
+					  :start-vertices (selected-shas* :select :starters)
+					  :end-vertices (selected-shas* :select :enders)
+					  :dead-revisions (selected-shas* :select :dead)
+					  :selected-vertices (selected-shas* :select :selected)))))
+
+(defwidget neighborhood-view-widget ()
+  ((action :accessor action)
+   (svg-content :accessor svg-content
+		:initform (make-instance 'svg-container 
+					 :svg-file-name (make-tmp-name "neighborhood" "svg")))))
+
+(defmethod initialize-instance :after ((widget neighborhood-view-widget) &key &allow-other-keys)
+  (setf (action widget)
+	(make-instance 'action-widget
+		       :function (lambda (&rest args)
+				   (declare (ignore args))
+				   (clear-cache "neighborhood")
+				   (create-neighborhood-svg)
+				   (mark-dirty widget))
+		       :label "Regenerate"))
+  (create-neighborhood-svg)
+  (setf (widget-children widget)
+	(list (action widget)
+	      (svg-content widget))))
+

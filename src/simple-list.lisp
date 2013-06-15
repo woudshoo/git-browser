@@ -7,10 +7,10 @@
    (item-ops :accessor item-ops
 	     :initform nil
 	     :initarg :item-ops
-	     :documentation "A list of actions.  Each action 
-is a list starting with (label action).
+	     :documentation "A list of actions.
+Each action is a list starting with (label action).
 The action should be a function taking two arguments, the widget and a list item.
-The is normally a string, but can be any object if it is specifed as
+The label is normally a string, but can be any object if it is specifed as
 \(label action :render-fn render-fn\) where the render-fn will be called 
 with exactly one argument, the label, and it should render to something appropriate.
 
