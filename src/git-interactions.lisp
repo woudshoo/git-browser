@@ -132,6 +132,9 @@ a descendend in the BOUNDARY-VERTICIES set."
     graph #'targets-of-vertex #'sources-of-vertex 
     :selector-p (lambda (v g) (declare (ignore g)) (member v boundary-verticies)))))
 
+
+
+
 (defun classified-by-edge-graph (graph stream &key 
 						(node-attributes (make-default-node-attribute))
 						(edge-attributes (lambda (e g) (declare (ignore g)) (if (> (length e) 2) '(:color :red))))
@@ -182,8 +185,7 @@ this method updates the v-v map so we can construct the edges in the next phase.
     (setf *dd-g* result)
     (setf result (wo-graph-functions:simplify 
 		  result 
-		  :selector (constantly nil) #+nil (lambda (v g)
-			      (< (wo-graph-functions:vertex-minimum-degree v g) 1))
+		  :selector (constantly nil)
 		  :reducers *trivial-edge-reducers*))
     (setf *dd-r* result)
     (write-to-dot stream result

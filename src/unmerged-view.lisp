@@ -139,21 +139,7 @@
 			   :caption "Selected Revisions")))
 
     (setf (widget-children widget :test) 
-	  `(,(weblocks:make-widget  "This will contain the unmerged view")
-	     ,(lambda (&rest args)
-		      (declare (ignore args))
-		      (with-html
-			(:p "Lets test: "
-			    (render-link 
-			     (lambda (&rest args)
-			       (declare (ignore args))
-			       (with-call/cc (setf *test-result*
-						   (do-choice "Hello this is your friendly helper, what can I do?" '(:alpha :beta)))))
-			     "Test Login with lambda/cc"))))
-
-	     ,(make-widget "And some more text to follow!!")
-
-	     
+	  `(
 	     ,(make-instance 'simple-list 
 			     :data-store store
 			     :order-by '(label :asc)
