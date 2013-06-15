@@ -12,10 +12,11 @@
     :licence ""
     :description "git-browser"
     :depends-on (:weblocks :alexandria :wo-git :fset)
-    :components ((:file "git-browser")
+    :components ((:file "package")
+		 (:file "git-browser" :depends-on ("package"))
 		 (:module conf
 		  :components ((:file "stores"))
-		  :depends-on ("git-browser"))
+		  :depends-on ("package" "git-browser"))
 		 (:module src
 		  :components ((:file "file-utilities")
 			       (:file "init-session")
@@ -29,5 +30,5 @@
 			       (:file "git-revision-store")
 			       (:file "git-interactions")
 			       (:file "master-view-widget"))
-		  :depends-on ("git-browser" conf))))
+		  :depends-on ("package" "git-browser" conf))))
 

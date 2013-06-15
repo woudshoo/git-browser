@@ -1,18 +1,4 @@
-
-(defpackage #:git-browser
-  (:use :cl :weblocks
-        :f-underscore :anaphora :wo-git :wo-graph :wo-graph-functions)
-  (:import-from :hunchentoot #:header-in
-		#:set-cookie #:set-cookie* #:cookie-in
-		#:user-agent #:referer)
-  (:documentation
-   "A web application based on Weblocks.")
-  (:export
-   #:read-graph))
-
 (in-package :git-browser)
-
-(export '(start-git-browser stop-git-browser))
 
 ;; A macro that generates a class or this webapp
 
@@ -27,13 +13,13 @@
 
 ;; Top level start & stop scripts
 
-(defun start-git-browser (&rest args)
+(defun start-git-browser-server (&rest args)
   "Starts the application by calling 'start-weblocks' with appropriate
 arguments."
   (apply #'start-weblocks args)
   (start-webapp 'git-browser))
 
-(defun stop-git-browser ()
+(defun stop-git-browser-server ()
   "Stops the application by calling 'stop-weblocks'."
   (stop-webapp 'git-browser)
   (stop-weblocks))
