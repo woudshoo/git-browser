@@ -1,6 +1,6 @@
 (in-package :git-browser)
 
-(import 'metatilities::curry)
+;(import 'metatilities::curry)
 
 (defclass git-revision-store ()
   ((data :accessor data :initarg :data :initform (make-hash-table)))
@@ -37,7 +37,7 @@ Also there are special classifications such as :boundary"
   (declare (ignore args))
   (let ((objects (objects-for-classification store (or select :normal))))
     (when order-by
-      (setf objects (sort objects (curry #'compare-for-key (car order-by))))
+      (setf objects (sort objects (metatilities:curry #'compare-for-key (car order-by))))
       (when (eql (cdr order-by) :desc)
 	(setf objects (nreverse objects))))
     (if range

@@ -40,8 +40,15 @@
 	      (svg-content widget))))
 
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun make-unmerged-view-widget ()
+  (make-instance 'widget :children
+		 (list
+		  (make-instance 'unmerged-view-widget))))
+
+#+nil (defun make-unmerged-view-widget ()
   (let* ((widget (make-instance 'widget))
 	 (store (webapp-session-value *revision-store-key*))
 	 (starters-widget (make-revision-list-widget "Start Revisions" :starters store))

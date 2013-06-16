@@ -11,7 +11,7 @@
 
 .simple-list ul
 {
-    max-height: 300px;
+/*    max-height: 300px; */
     overflow-y: scroll;
     overflow-x: hidden;
     list-style-type: none;

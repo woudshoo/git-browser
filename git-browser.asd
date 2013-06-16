@@ -11,7 +11,7 @@
     :author ""
     :licence ""
     :description "git-browser"
-    :depends-on (:weblocks :alexandria :wo-git :fset)
+    :depends-on (:weblocks :alexandria :wo-git :fset :metatilities)
     :components ((:file "package")
 		 (:file "git-browser" :depends-on ("package"))
 		 (:module conf
@@ -24,9 +24,10 @@
 			       (:file "widgets/revision-list-widget")
 			       (:file "widgets/svg-container")
 			       (:file "dot-utilities")
+			       (:file "revisions-view/revisions-view")
 			       (:file "unmerged-view/unmerged-view")
 			       (:file "master-view/master-view")
-			       (:file "neighneighborhood-view/neighborhood-view")
+			       (:file "neighborhood-view/neighborhood-view")
 			       (:file "git-revision")
 			       (:file "git-revision-store")
 			       (:file "git-interactions")

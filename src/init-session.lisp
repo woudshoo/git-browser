@@ -25,11 +25,12 @@
 	(new-default-revision-store))
   (setf (widget-children root) 
 	(list 
-	 (make-navigation "xxxxNavigation"  :navigation-class 'horizontal-navigation 
-			       "Master View" (make-master-view-widget) 
-			       `("Neighborhood" ,(make-neighborhood-view-widget))
-			       "Unmerged View" (make-unmerged-view-widget)
-			       `("Test Nested Navigation" ,(make-nested-navigation-test) nil)))))
+	 (make-navigation "Navigation"  :navigation-class 'horizontal-navigation 
+			  "Revisions" (make-revisions-view-widget)
+			  "Master View" (make-master-view-widget) 
+			  `("Neighborhood" ,(make-neighborhood-view-widget))
+			  "Unmerged View" (make-unmerged-view-widget)
+			  #+nil `("Test Nested Navigation" ,(make-nested-navigation-test) nil)))))
 
 (defwidget horizontal-navigation (weblocks:navigation) ())
 
