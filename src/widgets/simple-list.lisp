@@ -39,7 +39,9 @@ Each item will have the item ops rendered next them them."))
 (defmethod render-header ((obj simple-list))
   (when (caption obj)
       (with-html
-	(:h3 (cl-who:esc (caption obj))))))
+	(:h3 (cl-who:esc (caption obj)))))
+  (with-html
+    (:input :onkeyup (format nil  "filter_list (~A, this.value)" (dom-id obj)))))
 
 (defmethod render-footer ((obj simple-list))
   (or nil
@@ -79,6 +81,7 @@ Each item will have the item ops rendered next them them."))
 
 
 (defmethod render-widget-body ((obj simple-list) &rest args)
+  (declare (ignore args))
   (with-html
     (:div :class "simple-list"
 	  (render-header obj)

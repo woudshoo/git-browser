@@ -23,7 +23,10 @@ Also there are special classifications such as :boundary"
   (case classification
     (:all (alexandria:hash-table-values (data store)))
     (t (loop :for revision :being :the :hash-value :in (data store)
-	    :when (eql (classification revision) classification) :collect revision))))
+	  :when (or 
+		 (not classification)
+		 (eql (classification revision) classification)) 
+	  :collect revision))))
 
 
 (defmethod clean-store ((store git-revision-store))
@@ -37,7 +40,7 @@ Also there are special classifications such as :boundary"
 (defmethod find-persistent-objects ((store git-revision-store) class-name
 				    &rest args &key order-by range select &allow-other-keys)
   (declare (ignore args))
-  (let ((objects (objects-for-classification store (or select :normal))))
+  (let ((objects (objects-for-classification store select)))
     (when order-by
       (setf objects (sort objects (metatilities:curry #'compare-for-key (car order-by))))
       (when (eql (cdr order-by) :desc)
