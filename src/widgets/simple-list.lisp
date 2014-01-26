@@ -44,7 +44,11 @@ Each item will have the item ops rendered next them them."))
 (defmethod render-footer ((obj simple-list))
   (or nil
       (with-html
-	(:h4 (str (format nil "Total ~D" (count-persistent-objects (data-store obj) nil :select (select-tag obj))))))))
+	(:h4 (str 
+	      (format nil "Total ~D" 
+		      (count-persistent-objects (data-store obj) 
+						nil 
+						:select (select-tag obj))))))))
 
 
 

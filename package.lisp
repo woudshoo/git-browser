@@ -10,5 +10,6 @@
   (:export
    #:read-graph
    #:start-git-browser-server
-   #:stop-git-browser-server))
+   #:stop-git-browser-server
+   #:clear-cache))
 

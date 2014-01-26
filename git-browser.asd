@@ -11,7 +11,7 @@
     :author ""
     :licence ""
     :description "git-browser"
-    :depends-on (:weblocks :alexandria :wo-git :fset :metatilities)
+    :depends-on (:weblocks :alexandria :wo-git :fset :metatilities :split-sequence)
     :components ((:file "package")
 		 (:file "git-browser" :depends-on ("package"))
 		 (:module conf

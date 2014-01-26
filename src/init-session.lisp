@@ -8,10 +8,12 @@
   (let ((result (make-instance 'git-revision-store)))
     (format t "Initializing new store!~%")
     (when *default-graph*
-      (loop :for name :in (all-names *default-graph*) :do 
+      (loop :for name :in (all-names *default-graph*) 
+	 :for vertex = (name-to-vertex name *default-graph*)
+	 :do 
 	 (persist-object result (make-instance 'git-revision 
-					       :label (simplify-node-name name)
-					       :sha (name-to-vertex name *default-graph*))))
+					       :names  (vertex-names vertex *default-graph*)
+					       :sha vertex)))
       (loop :for rev :in *dead-revisions* 
 	 :for revision = (find-persistent-object-by-id result nil (parse-integer rev :radix 16))
 	 :do
@@ -28,7 +30,7 @@
 	 (make-navigation "Navigation"  :navigation-class 'horizontal-navigation 
 			  "Revisions" (make-revisions-view-widget)
 			  "Master View" (make-master-view-widget) 
-			  `("Neighborhood" ,(make-neighborhood-view-widget))
+			  "Neighborhood" (make-neighborhood-view-widget)
 			  "Unmerged View" (make-unmerged-view-widget)
 			  #+nil `("Test Nested Navigation" ,(make-nested-navigation-test) nil)))))
 

@@ -12,7 +12,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod persist-object ((store git-revision-store) (revision git-revision) &key)
-  "Add rivisions to the store."
+  "Add revisions to the store."
   (setf (gethash (sha revision) (data store)) revision))
 
 (defmethod objects-for-classification ((store git-revision-store) classification)
@@ -27,9 +27,11 @@ Also there are special classifications such as :boundary"
 
 
 (defmethod clean-store ((store git-revision-store))
+  "Empties the store, after this the store is empty as if it freshly created."
   (setf (data store) (make-hash-table)))
 
 (defmethod find-persistent-object-by-id ((store git-revision-store) class-name (id integer))
+  "Return the git-revision by its SHA-1."
   (gethash id (data store)))
 
 (defmethod find-persistent-objects ((store git-revision-store) class-name
@@ -75,7 +77,8 @@ instead of returning git-revision objects, it will return the SHAs"
 	  :documentation "Underlying git revision store, will be filtered by the select ivar")
    (select :accessor select
 	   :initarg :select
-	   :documentation "Selects a subset from the underlying store")))
+	   :documentation "Selects a subset from the underlying store"))
+  (:documentation "A view on an underlying `git-revision-store'.  The view is a filter on the underlying data."))
 
 
 (defmethod persist-object ((store git-revision-store-view) (revision git-revision) &key)

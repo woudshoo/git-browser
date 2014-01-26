@@ -5,6 +5,7 @@
     width: auto;
     position: fixed;
     top: 10px;
+    z-index: 100;
 }
 .horizontal-navigation .menu li 
 {

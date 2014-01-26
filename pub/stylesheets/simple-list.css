@@ -11,7 +11,9 @@
 
 .simple-list ul
 {
-/*    max-height: 300px; */
+    /*    max-height: 300px; */
+    max-height: 500px;
+
     overflow-y: scroll;
     overflow-x: hidden;
     list-style-type: none;
@@ -77,3 +79,29 @@
 /*    width: 50px; */
 }
 
+
+
+/*********************************************************************************/
+/* RENDERING REVISIONS, this should move to a separate css file                  */
+/*********************************************************************************/
+
+.git-revision-line div
+{
+    border-left-style: solid;
+    padding-left: 5pt;
+}
+
+.git-revision-line .tags
+{
+    border-color: blue;
+}
+
+.git-revision-line .origin
+{
+    border-color: yellow;
+}
+
+.git-revision-line .heads
+{
+    border-color: green;
+}
