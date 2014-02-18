@@ -19,3 +19,5 @@ sbcl is started in a directory containing a _"
 can be used an argument to an external process."
   (format nil "~A" (translate-logical-pathname pathname)))
 
+(defun make-tmp-pathname (base-name type)
+  (pathname-to-string (make-tmp-name base-name type)))

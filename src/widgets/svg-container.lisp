@@ -13,7 +13,7 @@
     (render-function :accessor svg-render-function
                      :initarg :svg-render-function
                      :initform #'(lambda (w) 
-                                    (with-open-file (in-stream (svg-file-name w)) 
+				   (with-open-file (in-stream (translate-logical-pathname (svg-file-name w))) 
                                        (alexandria:copy-stream in-stream *weblocks-output-stream*)))
                      :documentation "A function that takes ?? (one?) argument, the svg-container widget and
                                      should render the svg content

@@ -43,7 +43,7 @@ or
 (defun create-svg-graph (base-name graph-to-dot-writer &optional node-ref-string)
   "Creates dot file if needed and runs dot if needed."
     (unless (tmp-name-exists base-name "dot")
-      (with-open-file (s (make-tmp-name base-name "dot") :direction :output :if-exists :supersede)
+      (with-open-file (s (make-tmp-pathname base-name "dot") :direction :output :if-exists :supersede)
 	(funcall graph-to-dot-writer s)))
     (unless (tmp-name-exists base-name "svg")
       (run-dot (make-tmp-name base-name "dot")

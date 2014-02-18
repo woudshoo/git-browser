@@ -22,7 +22,7 @@
   ((action :accessor action)
    (svg-content :accessor svg-content
 		:initform
-		(make-instance 'svg-container :svg-file-name (make-tmp-name "unmerged" "svg")))))
+		(make-instance 'svg-container :svg-file-name (make-tmp-pathname "unmerged" "svg")))))
 
 
 (defmethod initialize-instance :after ((widget unmerged-view-widget) &key &allow-other-keys)

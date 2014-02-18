@@ -27,7 +27,7 @@
   ((action :accessor action)
    (svg-content :accessor svg-content
 		:initform (make-instance 'svg-container 
-					 :svg-file-name (make-tmp-name "neighborhood" "svg")))))
+					 :svg-file-name (make-tmp-pathname "neighborhood" "svg")))))
 
 (defmethod initialize-instance :after ((widget neighborhood-view-widget) &key &allow-other-keys)
   (setf (action widget)

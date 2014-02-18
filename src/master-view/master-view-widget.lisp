@@ -29,7 +29,7 @@
    (action :accessor action)
    (svg-content :accessor svg-content
 		:initform
-		(make-instance 'svg-container :svg-file-name (make-tmp-name "master" "svg")))))
+		(make-instance 'svg-container :svg-file-name (make-tmp-pathname "master" "svg")))))
 
 
 
